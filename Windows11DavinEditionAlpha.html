@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Windows 11 Web Desktop</title>
+<style>
+:root{--glass:rgba(245,248,255,.78);--line:rgba(255,255,255,.58);--ink:#172033;--blue:#1674d1}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);overflow:hidden}
+body{background:#061c4a}
+.wallpaper{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 70% 50%,#087fd0 0,#0753a6 26%,#061c4a 67%,#020b24 100%)}
+.wallpaper:before,.wallpaper:after{content:"";position:absolute;width:62vw;height:62vw;max-width:900px;max-height:900px;border-radius:50%;filter:blur(2px);transform:rotate(-25deg);left:43%;top:50%;translate:-50% -50%;background:conic-gradient(from 20deg at 50% 50%,transparent 0 14%,#2bd5ff 17%,#1489ee 28%,#0742a0 43%,#031c65 56%,#0a64c4 72%,#48d7ff 85%,transparent 89%);box-shadow:inset 0 0 65px #76e5ff55,0 0 85px #138ff066}
+.wallpaper:after{width:54vw;height:54vw;max-width:780px;max-height:780px;left:50%;top:50%;background:conic-gradient(from 210deg at 50% 50%,transparent 0 9%,#06133f 13%,#0750b8 26%,#3ad9ff 40%,#0b83e5 52%,#031d66 69%,#0c5ec2 83%,transparent 90%);opacity:.9;filter:blur(5px);transform:rotate(28deg) scaleX(1.12)}
+.desktop{position:relative;height:100%;padding:18px}
+.icon-grid{display:grid;grid-template-columns:80px;gap:18px;width:90px}
+.desktop-icon{border:1px solid transparent;border-radius:7px;color:white;text-align:center;padding:8px 4px;font-size:12px;text-shadow:0 1px 3px #00152c;cursor:pointer;user-select:none}
+.desktop-icon:hover,.desktop-icon:focus{background:#ffffff24;border-color:#ffffff45;outline:none}
+.glyph{font-size:29px;display:block;margin:0 auto 7px;filter:drop-shadow(0 2px 2px #0003)}
+.taskbar{position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(239,245,255,.76);backdrop-filter:blur(26px);border-top:1px solid #ffffff80;display:flex;align-items:center;justify-content:center;gap:7px;z-index:20}
+.taskbtn{height:42px;min-width:42px;border:0;background:transparent;border-radius:7px;font-size:22px;cursor:pointer;display:grid;place-items:center;padding:0 10px;position:relative}
+.taskbtn:hover{background:#ffffffa8}.taskbtn.active:after{content:"";position:absolute;bottom:1px;width:17px;height:3px;border-radius:4px;background:#1674d1}
+.task-spacer{flex:1}.tray{position:absolute;right:15px;display:flex;align-items:center;gap:12px;font-size:12px;text-align:right}.tray small{display:block;font-size:11px}
+.start-menu{display:none;position:fixed;z-index:30;bottom:70px;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 24px));height:590px;max-height:calc(100vh - 90px);padding:26px;background:rgba(246,249,255,.88);backdrop-filter:blur(32px);border:1px solid #ffffffb8;border-radius:12px;box-shadow:0 18px 60px #00112e55}
+.start-menu.show{display:flex;flex-direction:column}.searchbar{height:38px;border:1px solid #aabbd0;border-bottom:2px solid #1674d1;border-radius:5px;background:#fff;display:flex;align-items:center;padding:0 12px;gap:8px;color:#68768b;font-size:13px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:24px 4px 14px;font-size:14px;font-weight:600}
+.apps{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.app{border:0;background:transparent;border-radius:7px;padding:12px 3px;font:12px inherit;cursor:pointer;color:#1b2738}.app:hover{background:#dce9f8}.app span{display:block;font-size:27px;margin-bottom:7px}
+.recommended{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rec{padding:9px;border-radius:6px;display:flex;align-items:center;gap:10px;font-size:12px;background:#ffffff75}.rec b{font-weight:500;display:block}.rec small{color:#637086}
+.start-footer{margin:auto -26px -26px;padding:15px 25px;background:#e8eef7b8;display:flex;justify-content:space-between;align-items:center;font-size:13px;border-radius:0 0 12px 12px}
+.window{position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,calc(100vw - 30px));height:min(620px,calc(100vh - 100px));min-height:320px;background:#f7f9fc;border:1px solid #ffffffd9;border-radius:9px;box-shadow:0 24px 75px #00102c70;overflow:hidden;display:none;flex-direction:column}
+.window.show{display:flex}.titlebar{height:43px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding-left:15px;background:#f7f9fc;font-size:13px}.titlebar .win-title{flex:1}.win-controls{display:flex;height:100%}.win-controls button{width:45px;border:0;background:transparent;font-size:15px;cursor:pointer}.win-controls button:hover{background:#e1e8f2}.win-controls .close:hover{background:#d9363e;color:white}
+.edge-tabs{display:flex;align-items:center;background:#e9edf4;height:38px;padding-left:12px;gap:7px}.tab{background:#fff;border-radius:7px 7px 0 0;padding:9px 18px;font-size:12px;max-width:220px;overflow:hidden;white-space:nowrap}.addressbar{height:43px;display:flex;align-items:center;gap:8px;padding:5px 12px;background:#f8faff;border-bottom:1px solid #d9e0ea}.addressbar button{border:0;background:transparent;font-size:17px;cursor:pointer}.addressbar input{flex:1;min-width:0;border:1px solid #d2dce8;background:#fff;border-radius:18px;padding:8px 14px;font:13px inherit;outline-color:#1674d1}.edge-content{flex:1;overflow:auto;background:#fff}.edge-home{height:100%;min-height:270px;background:linear-gradient(140deg,#eaf5ff,#fff 55%,#d8eaff);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px}.edge-logo{font-size:58px;margin-bottom:8px}.edge-home h1{font-size:27px;font-weight:500;margin:0 0 20px}.edge-search{width:min(520px,100%);border-radius:24px;border:1px solid #ccd8e7;padding:14px 18px;background:#fff;box-shadow:0 3px 14px #102c4c12;display:flex;gap:10px}.edge-search input{border:0;outline:0;flex:1;font-size:14px}.edge-note{font-size:12px;color:#63738a;margin-top:20px}
+.store-body{padding:26px 32px;overflow:auto;flex:1;background:#f8fafc}.store-hero{padding:25px;border-radius:14px;background:linear-gradient(120deg,#d5ebff,#e9e5ff);display:flex;align-items:center;justify-content:space-between;gap:15px}.store-hero h2{margin:0 0 8px;font-size:25px}.store-hero p{margin:0;color:#4d607a;font-size:13px}.store-hero .big{font-size:58px}.store-section{font-size:19px;margin:25px 0 13px}.store-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.store-card{background:#fff;border:1px solid #e0e6ee;border-radius:10px;padding:15px;display:flex;gap:12px;align-items:center}.store-card .emoji{font-size:31px}.store-card b{font-size:13px;display:block}.store-card small{font-size:11px;color:#64748b}.store-card button{margin-top:7px;border:0;border-radius:4px;background:#dbeafe;color:#0758a8;padding:5px 11px;cursor:pointer}
+.file-body{padding:25px;overflow:auto;flex:1;background:#fff}.file-drop{border:2px dashed #b7c7db;border-radius:12px;padding:30px;text-align:center;background:#f7faff}.file-drop p{color:#64748b;font-size:13px}.file-drop input{max-width:100%}.preview-frame{width:100%;height:100%;border:0;background:white}.file-preview{flex:1;min-height:0;display:flex;flex-direction:column}.preview-label{padding:8px 14px;background:#eef3f9;font-size:12px;border-bottom:1px solid #d8e0e9;display:flex;justify-content:space-between;align-items:center}
+.notif{position:fixed;right:18px;bottom:72px;background:#f7faffed;backdrop-filter:blur(20px);padding:13px 17px;border-radius:8px;box-shadow:0 8px 30px #00102c35;font-size:13px;display:none;z-index:50}
+@media(max-width:560px){.start-menu{padding:18px;height:560px}.apps{grid-template-columns:repeat(3,1fr)}.recommended{grid-template-columns:1fr}.start-footer{margin-left:-18px;margin-right:-18px;margin-bottom:-18px}.tray{right:7px}.tray .tray-extra{display:none}.taskbar{justify-content:flex-start;padding-left:calc(50% - 115px)}}
+
+.desktop-icon{position:relative;cursor:grab;touch-action:none}.desktop-icon.dragging,.store-card.dragging{opacity:.45}
+.taskbar.drop-target{background:rgba(208,230,255,.92);box-shadow:inset 0 0 0 2px #1674d1}.taskbtn.pinned{background:#ffffff55}
+.store-card[draggable=true]{cursor:grab}.store-card .pin-app{font-size:11px;padding:5px 8px;margin-left:4px}
+.game-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#edf3fa;border-bottom:1px solid #d6e0eb;font-size:12px}
+.game-toolbar button{border:1px solid #bdcadb;border-radius:5px;background:white;padding:6px 10px;cursor:pointer}
+.game-stage{flex:1;min-height:0;background:#8ed2f4;position:relative;overflow:hidden}#blockGame{display:block;width:100%;height:100%;cursor:crosshair;touch-action:manipulation}
+.game-hint{position:absolute;left:12px;top:12px;background:#ffffffe0;padding:8px 10px;border-radius:6px;font-size:12px;pointer-events:none;max-width:270px}
+@media(max-width:560px){.taskbar{gap:2px;padding-left:8px;padding-right:100px;justify-content:center}.taskbtn{min-width:34px;padding:0 6px}}
+</style>
+</head>
+<body>
+<div class="wallpaper"></div>
+<div class="desktop">
+  <div class="icon-grid" id="desktopIcons">
+    <div class="desktop-icon" draggable="true" data-app="edge" tabindex="0" onclick="openWindow('edge')"><span class="glyph">🌐</span>Microsoft Edge</div>
+    <div class="desktop-icon" draggable="true" data-app="store" tabindex="0" onclick="openWindow('store')"><span class="glyph">🛍️</span>Microsoft Store</div>
+    <div class="desktop-icon" draggable="true" data-app="files" tabindex="0" onclick="openWindow('files')"><span class="glyph">📁</span>HTML files</div>
+    <div class="desktop-icon" draggable="true" data-app="game" tabindex="0" onclick="openWindow('game')"><span class="glyph">🧱</span>Block World</div>
+    <div class="desktop-icon" draggable="true" data-app="launcher" tabindex="0" onclick="openWindow('launcher')"><span class="glyph">🚀</span>Block World Launcher</div>
+    <div class="desktop-icon" draggable="true" data-app="photos" tabindex="0" onclick="toast('Photos demo app')"><span class="glyph">🖼️</span>Photos</div>
+    <div class="desktop-icon" draggable="true" data-app="notepad" tabindex="0" onclick="openNotepad()"><span class="glyph">📝</span>Notepad</div>
+  </div>
+</div>
+<div class="start-menu" id="startMenu">
+  <div class="searchbar">⌕ <span>Search for apps, settings, and documents</span></div>
+  <div class="section-head">Pinned <span style="font-weight:400;background:#fff;padding:5px 10px;border-radius:5px;font-size:12px">All apps ›</span></div>
+  <div class="apps">
+    <button class="app" onclick="openWindow('edge');toggleStart(false)"><span>🌐</span>Edge</button>
+    <button class="app" onclick="openWindow('store');toggleStart(false)"><span>🛍️</span>Microsoft Store</button>
+    <button class="app" onclick="openWindow('files');toggleStart(false)"><span>📁</span>HTML files</button>
+    <button class="app" onclick="toast('Settings are simulated in this demo');toggleStart(false)"><span>⚙️</span>Settings</button>
+    <button class="app" onclick="toast('Photos app demo');toggleStart(false)"><span>🖼️</span>Photos</button>
+    <button class="app" onclick="toast('Calculator app demo');toggleStart(false)"><span>🧮</span>Calculator</button>
+    <button class="app" onclick="openWindow('game');toggleStart(false)"><span>🧱</span>Block World</button>
+    <button class="app" onclick="openWindow('launcher');toggleStart(false)"><span>🚀</span>Block World Launcher</button>
+    <button class="app" onclick="openNotepad();toggleStart(false)"><span>📝</span>Notepad</button>
+    <button class="app" onclick="toast('Calendar demo app');toggleStart(false)"><span>📅</span>Calendar</button>
+    <button class="app" onclick="toast('Weather demo app');toggleStart(false)"><span>🌤️</span>Weather</button>
+    <button class="app" onclick="toast('Clock demo app');toggleStart(false)"><span>⏰</span>Clock</button>
+    <button class="app" onclick="toast('Paint demo app');toggleStart(false)"><span>🎨</span>Paint</button>
+  </div>
+  <div class="section-head">Recommended <span style="font-weight:400;font-size:12px">More ›</span></div>
+  <div class="recommended">
+    <div class="rec"><span style="font-size:23px">📄</span><div><b>Open an HTML file</b><small>Choose a local .html page</small></div></div>
+    <div class="rec"><span style="font-size:23px">🌐</span><div><b>Microsoft Edge</b><small>Browse the web</small></div></div>
+  </div>
+  <div class="start-footer"><span>👤 &nbsp; Local User</span><button style="border:0;background:transparent;cursor:pointer" onclick="toast('This web desktop cannot shut down your computer')">⏻</button></div>
+</div>
+<div class="window" id="edgeWindow">
+  <div class="titlebar"><span>🌐</span><span class="win-title">Microsoft Edge</span><div class="win-controls"><button onclick="minimizeWindow('edgeWindow')">—</button><button onclick="maximizeWindow('edgeWindow')">□</button><button class="close" onclick="closeWindow('edgeWindow')">×</button></div></div>
+  <div class="edge-tabs"><div class="tab">🌐 &nbsp; New tab</div><button style="border:0;background:transparent;font-size:20px">+</button></div>
+  <div class="addressbar"><button onclick="edgeHome()">‹</button><button onclick="edgeHome()">⟳</button><span>🔒</span><input id="edgeAddress" placeholder="Search or enter web address" onkeydown="if(event.key==='Enter')navigateEdge()"><button onclick="navigateEdge()" title="Go">➜</button><button onclick="openWindow('files')" title="Open local HTML">📂</button></div>
+  <div class="edge-content" id="edgeContent"><div class="edge-home"><div class="edge-logo">🌐</div><h1>Good afternoon</h1><div class="edge-search"><span>🔎</span><input id="edgeSearch" placeholder="Search the web" onkeydown="if(event.key==='Enter'){document.getElementById('edgeAddress').value=this.value;navigateEdge()}"></div><div class="edge-note">This is a browser-style demo. Real websites open in a new browser tab.</div><button style="margin-top:18px;padding:9px 15px;border:0;border-radius:6px;background:#dbeafe;color:#0758a8;cursor:pointer" onclick="openWindow('files')">Open a local .html file</button></div></div>
+</div>
+<div class="window" id="storeWindow">
+  <div class="titlebar"><span>🛍️</span><span class="win-title">Microsoft Store</span><div class="win-controls"><button onclick="minimizeWindow('storeWindow')">—</button><button onclick="maximizeWindow('storeWindow')">□</button><button class="close" onclick="closeWindow('storeWindow')">×</button></div></div>
+  <div class="store-body">
+    <div class="store-hero"><div><h2>Welcome to Microsoft Store</h2><p>Discover apps, games, and entertainment.</p><button onclick="toast('Store demo: no apps are installed')" style="margin-top:15px;border:0;background:#1769c2;color:white;padding:9px 15px;border-radius:5px;cursor:pointer">Explore apps</button></div><div class="big">🛍️</div></div>
+    <h3 class="store-section">Popular apps</h3>
+    <div class="store-grid">
+      <div class="store-card"><span class="emoji">🌐</span><div><b>Microsoft Edge</b><small>Browser</small><br><button onclick="openWindow('edge')">Open</button></div></div>
+      <div class="store-card"><span class="emoji">🎵</span><div><b>Media Player</b><small>Music & video</small><br><button onclick="toast('Demo app — not installed')">Get</button></div></div>
+      <div class="store-card"><span class="emoji">🖼️</span><div><b>Photos</b><small>Photo manager</small><br><button onclick="toast('Demo app — not installed')">Get</button></div></div>
+      <div class="store-card"><span class="emoji">🎮</span><div><b>Xbox</b><small>Games</small><br><button onclick="toast('Demo app — not installed')">Get</button></div></div>
+      <div class="store-card"><span class="emoji">📝</span><div><b>Notepad</b><small>Productivity</small><br><button onclick="toast('Demo app — not installed')">Get</button></div></div>
+      <div class="store-card"><span class="emoji">📦</span><div><b>Utilities</b><small>Tools</small><br><button onclick="toast('Demo app — not installed')">Get</button></div></div>
+      <div class="store-card" draggable="true" data-app="game"><span class="emoji">🧱</span><div><b>Block World</b><small>Creative sandbox</small><br><button onclick="openWindow('game')">Play</button><button class="pin-app" onclick="pinApp('game')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="launcher"><span class="emoji">🚀</span><div><b>Block World Launcher</b><small>Versions, profiles & worlds</small><br><button onclick="openWindow('launcher')">Open</button><button class="pin-app" onclick="pinApp('launcher')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="notepad"><span class="emoji">📝</span><div><b>Notepad</b><small>Write notes</small><br><button onclick="openNotepad()">Open</button><button class="pin-app" onclick="pinApp('notepad')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="calendar"><span class="emoji">📅</span><div><b>Calendar</b><small>Plan your day</small><br><button onclick="toast('Calendar demo app')">Open</button><button class="pin-app" onclick="pinApp('calendar')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="weather"><span class="emoji">🌤️</span><div><b>Weather</b><small>Forecast demo</small><br><button onclick="toast('Weather demo app')">Open</button><button class="pin-app" onclick="pinApp('weather')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="paint"><span class="emoji">🎨</span><div><b>Paint</b><small>Drawing demo</small><br><button onclick="toast('Paint demo app')">Open</button><button class="pin-app" onclick="pinApp('paint')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="clockapp"><span class="emoji">⏰</span><div><b>Clock</b><small>Time tools demo</small><br><button onclick="toast('Clock demo app')">Open</button><button class="pin-app" onclick="pinApp('clockapp')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="photos"><span class="emoji">🖼️</span><div><b>Photos</b><small>Image viewer demo</small><br><button onclick="toast('Photos demo app')">Open</button><button class="pin-app" onclick="pinApp('photos')">Pin</button></div></div>
+      <div class="store-card" draggable="true" data-app="calculator"><span class="emoji">🧮</span><div><b>Calculator</b><small>Calculator demo</small><br><button onclick="toast('Calculator demo app')">Open</button><button class="pin-app" onclick="pinApp('calculator')">Pin</button></div></div>
+    </div>
+    <p style="font-size:11px;color:#64748b;margin-top:24px">Drag an app card onto the taskbar to pin it, or use its Pin button. These are local demo apps, not real Microsoft Store downloads.</p>
+  </div>
+</div>
+<div class="window" id="filesWindow">
+  <div class="titlebar"><span>📁</span><span class="win-title">Open HTML file</span><div class="win-controls"><button onclick="minimizeWindow('filesWindow')">—</button><button onclick="maximizeWindow('filesWindow')">□</button><button class="close" onclick="closeWindow('filesWindow')">×</button></div></div>
+  <div class="file-body" id="fileBody">
+    <div class="file-drop"><div style="font-size:48px">📄</div><h2>Open a local HTML file</h2><p>Select a .html or .htm file from your computer. It will be previewed inside this desktop.</p><input id="htmlPicker" type="file" accept=".html,.htm,text/html" onchange="loadHtmlFile(event)"><p>Tip: you can also use the file picker from the Edge window.</p></div>
+  </div>
+</div>
+<div class="window" id="gameWindow">
+  <div class="titlebar"><span>🧱</span><span class="win-title">Block World — Creative Sandbox</span><div class="win-controls"><button onclick="minimizeWindow('gameWindow')">—</button><button onclick="maximizeWindow('gameWindow')">□</button><button class="close" onclick="closeWindow('gameWindow')">×</button></div></div>
+  <div class="game-toolbar"><b>Block World</b><span id="activeWorldLabel">Creative world</span><span style="flex:1"></span><button onclick="openWindow('launcher')">Launcher</button><button onclick="openWorldMenu()">World Menu</button><label>Block <select id="blockType"><option value="grass">Grass</option><option value="stone">Stone</option><option value="wood">Wood</option><option value="water">Water</option><option value="sand">Sand</option><option value="brick">Brick</option></select></label><button onclick="newWorld()">New world</button><button onclick="clearWorld()">Clear</button></div>
+  <div class="game-stage"><canvas id="blockGame"></canvas><div class="game-hint">Click a tile to place/remove a block. Use World Menu to create and switch saved worlds.</div></div>
+</div>
+<div class="window" id="launcherWindow">
+  <div class="titlebar"><span>🧱</span><span class="win-title">Block World Launcher</span><div class="win-controls"><button onclick="minimizeWindow('launcherWindow')">—</button><button onclick="maximizeWindow('launcherWindow')">□</button><button class="close" onclick="closeWindow('launcherWindow')">×</button></div></div>
+  <div class="store-body" style="overflow:auto">
+    <div class="store-hero"><div><h2>Block World Launcher</h2><p>Choose a version, set up your player, and launch a world.</p></div><div class="big">🧱</div></div>
+    <h3 class="store-section">Player profile</h3>
+    <div class="store-card" style="margin-bottom:12px"><span class="emoji">👤</span><div style="flex:1"><b>Username</b><input id="playerUsername" maxlength="16" value="Player" placeholder="Enter username" style="display:block;margin-top:7px;width:min(100%,360px);padding:9px;border:1px solid #cbd5e1;border-radius:5px"><small>Local profile name only; no account or online authentication.</small></div></div>
+    <div class="store-card" style="margin-bottom:12px"><span class="emoji">🎨</span><div style="flex:1"><b>Character customization</b><div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px"><label>Skin tint <input id="skinTint" type="color" value="#e0ad83"></label><label>Shirt <input id="shirtTint" type="color" value="#2877c7"></label><label>World style <select id="worldStyle"><option value="classic">Classic</option><option value="island">Island</option><option value="desert">Desert</option><option value="frozen">Frozen</option></select></label></div></div></div>
+    <h3 class="store-section">Select game version</h3>
+    <div class="store-grid">
+      <div class="store-card"><span class="emoji">🟩</span><div><b>Block World Classic</b><small>Version 1.0 · Simple blocks</small><br><button onclick="launchBlockVersion('1.0')">Play this version</button></div></div>
+      <div class="store-card"><span class="emoji">🌲</span><div><b>Block World 1.5</b><small>Version 1.5 · More terrain</small><br><button onclick="launchBlockVersion('1.5')">Play this version</button></div></div>
+      <div class="store-card"><span class="emoji">💎</span><div><b>Block World 2.0</b><small>Version 2.0 · Expanded palette</small><br><button onclick="launchBlockVersion('2.0')">Play this version</button></div></div>
+      <div class="store-card"><span class="emoji">🧪</span><div><b>Block World Snapshot</b><small>Experimental sandbox</small><br><button onclick="launchBlockVersion('Snapshot')">Play this version</button></div></div>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-top:20px">These are selectable versions of this mini-game demo, not official Minecraft versions. Your username and customization are stored in this page session.</p>
+    <button onclick="openWorldMenu()" style="border:0;border-radius:5px;background:#1769c2;color:white;padding:10px 15px;cursor:pointer">Manage worlds</button>
+  </div>
+</div>
+<div class="window" id="worldMenuWindow">
+  <div class="titlebar"><span>🌍</span><span class="win-title">Block World Menu</span><div class="win-controls"><button onclick="minimizeWindow('worldMenuWindow')">—</button><button onclick="maximizeWindow('worldMenuWindow')">□</button><button class="close" onclick="closeWindow('worldMenuWindow')">×</button></div></div>
+  <div class="store-body" style="overflow:auto">
+    <div class="store-hero"><div><h2>Worlds</h2><p>Create a new world or continue a saved world.</p></div><div class="big">🌍</div></div>
+    <h3 class="store-section">Create new world</h3>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;background:white;border:1px solid #e0e6ee;border-radius:10px;padding:15px">
+      <label style="flex:1;min-width:150px;font-size:12px">World name<input id="newWorldName" value="My World" maxlength="32" style="display:block;width:100%;margin-top:6px;padding:9px;border:1px solid #cbd5e1;border-radius:5px"></label>
+      <label style="font-size:12px">World type<select id="newWorldType" style="display:block;margin-top:6px;padding:9px;border:1px solid #cbd5e1;border-radius:5px"><option value="classic">Classic</option><option value="island">Island</option><option value="desert">Desert</option><option value="frozen">Frozen</option></select></label>
+      <button onclick="createNamedWorld()" style="align-self:end;border:0;border-radius:5px;background:#1769c2;color:white;padding:10px 14px;cursor:pointer">＋ Create world</button>
+    </div>
+    <h3 class="store-section">Saved worlds</h3>
+    <div id="worldList" class="store-grid"></div>
+    <p style="font-size:12px;color:#64748b">Worlds are saved in this open page only. Reloading the page resets the demo world list.</p>
+  </div>
+</div>
+<div class="window" id="notepadWindow">
+  <div class="titlebar"><span>📝</span><span class="win-title">Notepad</span><div class="win-controls"><button onclick="minimizeWindow('notepadWindow')">—</button><button onclick="maximizeWindow('notepadWindow')">□</button><button class="close" onclick="closeWindow('notepadWindow')">×</button></div></div>
+  <textarea id="notesArea" style="flex:1;border:0;resize:none;padding:18px;font:15px Consolas,monospace;outline:none" placeholder="Start typing..."></textarea>
+</div>
+<div class="taskbar" id="taskbar">
+  <button class="taskbtn" title="Start" onclick="toggleStart()">⊞</button>
+  <button class="taskbtn" title="Search" onclick="toggleStart()">⌕</button>
+  <button class="taskbtn" title="File Explorer / HTML files" onclick="openWindow('files')">📁</button>
+  <button class="taskbtn" title="Microsoft Edge" onclick="openWindow('edge')">🌐</button>
+  <button class="taskbtn" title="Microsoft Store" onclick="openWindow('store')">🛍️</button>
+  <button class="taskbtn" title="Block World" onclick="openWindow('game')">🧱</button>
+  <div class="tray"><span class="tray-extra">⌃ &nbsp; ◉ &nbsp; ◖</span><span>◖</span><span id="clock">5:12 PM<small>10/21/2026</small></span></div>
+</div>
+<div class="notif" id="notif"></div>
+<script>
+let currentObjectUrl=null;
+function toggleStart(force){const m=document.getElementById('startMenu');if(force===false)m.classList.remove('show');else m.classList.toggle('show')}
+function openWindow(name){document.getElementById('startMenu').classList.remove('show');const el=document.getElementById(name+'Window');el.classList.add('show');document.querySelectorAll('.taskbtn').forEach(b=>b.classList.remove('active'));if(name==='edge')document.querySelectorAll('.taskbtn')[3].classList.add('active');if(name==='store')document.querySelectorAll('.taskbtn')[4].classList.add('active')}
+function closeWindow(id){document.getElementById(id).classList.remove('show')}
+function minimizeWindow(id){document.getElementById(id).classList.remove('show')}
+function maximizeWindow(id){const el=document.getElementById(id);if(el.dataset.max==='1'){el.style.width='min(900px,calc(100vw - 30px))';el.style.height='min(620px,calc(100vh - 100px))';el.style.left='50%';el.style.top='50%';el.style.transform='translate(-50%,-50%)';el.dataset.max='0'}else{el.style.width='calc(100vw - 12px)';el.style.height='calc(100vh - 68px)';el.style.left='6px';el.style.top='6px';el.style.transform='none';el.dataset.max='1'}}
+function toast(msg){const n=document.getElementById('notif');n.textContent=msg;n.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>n.style.display='none',2600)}
+function navigateEdge(){let v=document.getElementById('edgeAddress').value.trim();if(!v)return;if(!/^https?:\/\//i.test(v)&&v.includes('.')&&!v.includes(' '))v='https://'+v;else if(!/^https?:\/\//i.test(v))v='https://www.google.com/search?q='+encodeURIComponent(v);window.open(v,'_blank','noopener');toast('Opened in a new browser tab')}
+function edgeHome(){document.getElementById('edgeAddress').value='';document.getElementById('edgeSearch').value='';}
+function loadHtmlFile(e){const f=e.target.files&&e.target.files[0];if(!f)return;if(currentObjectUrl)URL.revokeObjectURL(currentObjectUrl);currentObjectUrl=URL.createObjectURL(f);const body=document.getElementById('fileBody');body.innerHTML='';const bar=document.createElement('div');bar.className='preview-label';const label=document.createElement('span');label.textContent='📄 '+f.name;const open=document.createElement('button');open.textContent='Open in browser tab ↗';open.style.cssText='border:0;border-radius:5px;background:#dbeafe;padding:6px 10px;cursor:pointer';open.onclick=()=>window.open(currentObjectUrl,'_blank','noopener');bar.append(label,open);const frame=document.createElement('iframe');frame.className='preview-frame';frame.title='HTML file preview';frame.sandbox='allow-scripts allow-forms allow-modals allow-popups';frame.src=currentObjectUrl;const wrap=document.createElement('div');wrap.className='file-preview';wrap.append(bar,frame);body.append(wrap);toast('Loaded '+f.name)}
+function updateClock(){const d=new Date();document.getElementById('clock').innerHTML=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+'<small>'+d.toLocaleDateString()+'</small>'}updateClock();setInterval(updateClock,30000);
+
+const appInfo={edge:{icon:'🌐',label:'Edge',window:'edge'},store:{icon:'🛍️',label:'Store',window:'store'},files:{icon:'📁',label:'Files',window:'files'},game:{icon:'🧱',label:'Block World',window:'game'},launcher:{icon:'🚀',label:'Block World Launcher',window:'launcher'},notepad:{icon:'📝',label:'Notepad',window:'notepad'},photos:{icon:'🖼️',label:'Photos'},calendar:{icon:'📅',label:'Calendar'},weather:{icon:'🌤️',label:'Weather'},paint:{icon:'🎨',label:'Paint'},clockapp:{icon:'⏰',label:'Clock'},calculator:{icon:'🧮',label:'Calculator'}};
+function openNotepad(){openWindow('notepad')}
+function launchApp(app){const info=appInfo[app];if(!info)return;if(info.window)openWindow(info.window);else toast(info.label+' demo app')}
+function pinApp(app){const info=appInfo[app];if(!info)return;const bar=document.getElementById('taskbar');if(bar.querySelector('[data-pinned="'+app+'"]')){toast(info.label+' is already pinned');return}const tray=bar.querySelector('.tray'),btn=document.createElement('button');btn.className='taskbtn pinned';btn.dataset.pinned=app;btn.title=info.label;btn.textContent=info.icon;btn.onclick=()=>launchApp(app);btn.draggable=true;btn.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/app',app);e.dataTransfer.effectAllowed='move'});bar.insertBefore(btn,tray);toast(info.label+' pinned to dock')}
+function setupDragging(){
+ const desktop=document.getElementById('desktopIcons'),desk=document.querySelector('.desktop'),bar=document.getElementById('taskbar');
+ document.querySelectorAll('.desktop-icon').forEach(el=>{el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/app',el.dataset.app||'');e.dataTransfer.setData('text/source','desktop');e.dataTransfer.effectAllowed='copyMove';el.classList.add('dragging')});el.addEventListener('dragend',()=>el.classList.remove('dragging'));el.addEventListener('dragover',e=>e.preventDefault());el.addEventListener('drop',e=>{e.preventDefault();const app=e.dataTransfer.getData('text/app');if(app&&app!==el.dataset.app){const other=desktop.querySelector('[data-app="'+app+'"]');if(other)desktop.insertBefore(other,el.nextSibling)}})});
+ document.querySelectorAll('.store-card[draggable=true]').forEach(card=>{card.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/app',card.dataset.app);e.dataTransfer.setData('text/source','store');e.dataTransfer.effectAllowed='copy';card.classList.add('dragging')});card.addEventListener('dragend',()=>card.classList.remove('dragging'))});
+ bar.addEventListener('dragover',e=>{e.preventDefault();bar.classList.add('drop-target');e.dataTransfer.dropEffect='copy'});bar.addEventListener('dragleave',e=>{if(!bar.contains(e.relatedTarget))bar.classList.remove('drop-target')});bar.addEventListener('drop',e=>{e.preventDefault();bar.classList.remove('drop-target');const app=e.dataTransfer.getData('text/app');if(app)pinApp(app)});
+ desk.addEventListener('dragover',e=>e.preventDefault());desk.addEventListener('drop',e=>{if(e.target.closest('.desktop-icon'))return;e.preventDefault();const app=e.dataTransfer.getData('text/app');if(!app)return;let shortcut=desktop.querySelector('[data-app="'+app+'"]');if(!shortcut){const info=appInfo[app];if(!info)return;shortcut=document.createElement('div');shortcut.className='desktop-icon';shortcut.draggable=true;shortcut.dataset.app=app;shortcut.tabIndex=0;const glyph=document.createElement('span');glyph.className='glyph';glyph.textContent=info.icon;shortcut.append(glyph,document.createTextNode(info.label));shortcut.onclick=()=>launchApp(app);shortcut.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('text/app',app);ev.dataTransfer.effectAllowed='copyMove'});}desktop.appendChild(shortcut);toast((appInfo[app]?.label||app)+' shortcut moved to desktop')});
+}
+setupDragging();
+let world=[],worldCols=19,worldRows=13;const blockColors={grass:'#68b85b',stone:'#929aa4',wood:'#a96e3c',water:'#4ba9ef',sand:'#e4cd83',brick:'#b65c52'};
+function newWorld(){world=Array.from({length:worldRows},(_,y)=>Array.from({length:worldCols},(_,x)=>{let r=Math.random(),type;if(worldStyle==='desert')type=r<.15?'stone':r<.8?'sand':'wood';else if(worldStyle==='frozen')type=r<.18?'water':r<.35?'stone':r<.7?'sand':'grass';else if(worldStyle==='island')type=(x<2||y<2||x>worldCols-3||y>worldRows-3)?'water':(r<.15?'stone':'grass');else type=r<.1?'water':r<.24?'stone':r<.34?'sand':'grass';return {type,height:0}}));drawWorld()}
+function clearWorld(){world=Array.from({length:worldRows},()=>Array.from({length:worldCols},()=>({type:'air',height:0})));drawWorld()}
+function drawWorld(){const c=document.getElementById('blockGame');if(!c)return;const stage=c.parentElement,dpr=window.devicePixelRatio||1,w=Math.max(320,stage.clientWidth),h=Math.max(240,stage.clientHeight);c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#9edcf5';ctx.fillRect(0,0,w,h);const tw=Math.min((w-24)/worldCols,(h-24)/worldRows),th=tw*.72,ox=(w-worldCols*tw)/2,oy=(h-worldRows*th)/2;for(let y=0;y<worldRows;y++)for(let x=0;x<worldCols;x++){const b=world[y][x],px=ox+x*tw,py=oy+y*th;if(b.type==='air'){ctx.fillStyle='#d9f0fb';ctx.fillRect(px+1,py+1,tw-2,th-2);ctx.strokeStyle='#b8dfef';ctx.strokeRect(px+1,py+1,tw-2,th-2);continue}ctx.fillStyle=blockColors[b.type]||'#68b85b';ctx.fillRect(px+1,py+1,tw-2,th-2);ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(px+2,py+2,tw-4,Math.max(3,th*.18));ctx.strokeStyle='rgba(30,60,70,.23)';ctx.strokeRect(px+1,py+1,tw-2,th-2);if(b.type==='grass'){ctx.fillStyle='#4c9945';ctx.fillRect(px+2,py+th*.78,tw-4,th*.16)}if(b.type==='water'){ctx.strokeStyle='#d9f5ff88';ctx.beginPath();ctx.moveTo(px+4,py+th*.48);ctx.lineTo(px+tw-4,py+th*.48);ctx.stroke()}if(b.type==='wood'){ctx.strokeStyle='#71421f';ctx.beginPath();ctx.moveTo(px+tw*.33,py+3);ctx.lineTo(px+tw*.33,py+th-3);ctx.moveTo(px+tw*.66,py+3);ctx.lineTo(px+tw*.66,py+th-3);ctx.stroke()}}c._grid={tw,th,ox,oy}}
+function gameClick(e){const c=e.currentTarget,g=c._grid;if(!g)return;const r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left-g.ox)/g.tw),y=Math.floor((e.clientY-r.top-g.oy)/g.th);if(x<0||y<0||x>=worldCols||y>=worldRows)return;world[y][x]=world[y][x].type==='air'?{type:document.getElementById('blockType').value,height:0}:{type:'air',height:0};drawWorld()}
+document.getElementById('blockGame').addEventListener('click',gameClick);newWorld();document.getElementById('playerUsername').addEventListener('input',updateActiveWorld);document.getElementById('worldStyle').addEventListener('change',e=>{worldStyle=e.target.value;const w=savedWorlds.find(x=>x.id===activeWorldId);if(w)w.type=worldStyle;newWorld();renderWorldList()});renderWorldList();updateActiveWorld();window.addEventListener('resize',drawWorld);
+
+
+let savedWorlds=[{id:1,name:'First World',type:'classic',version:'1.0'}],activeWorldId=1,nextWorldId=2,currentBlockVersion='1.0';
+function openWorldMenu(){renderWorldList();openWindow('worldMenu')}
+function createNamedWorld(){
+ const name=(document.getElementById('newWorldName').value||'New World').trim().slice(0,32)||'New World';
+ const type=document.getElementById('newWorldType').value;
+ const w={id:nextWorldId++,name,type,version:currentBlockVersion};
+ savedWorlds.push(w);activeWorldId=w.id;applyWorldStyle(type);newWorld();updateActiveWorld();renderWorldList();
+ document.getElementById('newWorldName').value='My World';toast('Created world: '+name);openWindow('game');
+}
+function renderWorldList(){
+ const list=document.getElementById('worldList');if(!list)return;list.innerHTML='';
+ savedWorlds.forEach(w=>{
+  const card=document.createElement('div');card.className='store-card';
+  const emoji=document.createElement('span');emoji.className='emoji';emoji.textContent=w.type==='island'?'🏝️':w.type==='desert'?'🏜️':w.type==='frozen'?'❄️':'🌿';
+  const content=document.createElement('div');content.style.flex='1';
+  const title=document.createElement('b');title.textContent=w.name;
+  const small=document.createElement('small');small.textContent=w.type+' world · version '+w.version;
+  const load=document.createElement('button');load.textContent=w.id===activeWorldId?'Playing':'Play';load.onclick=()=>loadNamedWorld(w.id);
+  const rename=document.createElement('button');rename.textContent='Rename';rename.style.marginLeft='5px';rename.onclick=()=>{const n=prompt('Rename world:',w.name);if(n&&n.trim()){w.name=n.trim().slice(0,32);renderWorldList();updateActiveWorld()}};
+  const del=document.createElement('button');del.textContent='Delete';del.style.marginLeft='5px';del.onclick=()=>{if(savedWorlds.length===1){toast('Keep at least one world');return}savedWorlds=savedWorlds.filter(x=>x.id!==w.id);if(activeWorldId===w.id){activeWorldId=savedWorlds[0].id;applyWorldStyle(savedWorlds[0].type);newWorld()}renderWorldList();updateActiveWorld()};
+  content.append(title,document.createElement('br'),small,document.createElement('br'),load,rename,del);card.append(emoji,content);list.append(card);
+ });
+}
+function loadNamedWorld(id){const w=savedWorlds.find(x=>x.id===id);if(!w)return;activeWorldId=id;currentBlockVersion=w.version;applyWorldStyle(w.type);newWorld();updateActiveWorld();renderWorldList();openWindow('game');toast('Loaded '+w.name)}
+function updateActiveWorld(){const w=savedWorlds.find(x=>x.id===activeWorldId);const label=document.getElementById('activeWorldLabel');if(label)label.textContent=(w?w.name:'Creative world')+' · '+(document.getElementById('playerUsername')?.value||'Player')}
+function applyWorldStyle(type){const select=document.getElementById('worldStyle');if(select)select.value=type;worldStyle=type}
+let worldStyle='classic';
+function launchBlockVersion(version){
+ currentBlockVersion=version;
+ const username=(document.getElementById('playerUsername').value||'Player').trim().slice(0,16)||'Player';
+ const skin=document.getElementById('skinTint').value,shirt=document.getElementById('shirtTint').value;
+ toast('Launching Block World '+version+' as '+username);
+ let w=savedWorlds.find(x=>x.id===activeWorldId);if(w)w.version=version;
+ newWorld();updateActiveWorld();renderWorldList();openWindow('game');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('startMenu').classList.remove('show');if((e.metaKey||e.key==='Meta')&&e.key.toLowerCase()==='r'){e.preventDefault();toggleStart()}});
+document.addEventListener('click',e=>{const m=document.getElementById('startMenu');if(m.classList.contains('show')&&!m.contains(e.target)&&!e.target.closest('.taskbtn'))m.classList.remove('show')});
+</script>
+</body>
+</html>
